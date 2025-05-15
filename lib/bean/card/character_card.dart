@@ -15,7 +15,9 @@ class CharacterCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: CircleAvatar(
-        backgroundImage: NetworkImage(characterItem.avator.grid),
+        backgroundImage: characterItem.avator.grid.isEmpty
+            ? NetworkImage('https://bangumi.tv/img/info_only.png')
+            : NetworkImage(characterItem.avator.grid),
       ),
       title: Text(
         characterItem.name,
@@ -28,7 +30,6 @@ class CharacterCard extends StatelessWidget {
       trailing: Text(characterItem.relation),
       onTap: () {
         showModalBottomSheet(
-            barrierColor: Colors.transparent,
             isScrollControlled: true,
             constraints: BoxConstraints(
                 maxHeight: MediaQuery.of(context).size.height * 3 / 4,

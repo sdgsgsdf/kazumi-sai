@@ -16,7 +16,7 @@ class WebviewWindowsItemImpel extends StatefulWidget {
 
 class _WebviewWindowsItemImpelState extends State<WebviewWindowsItemImpel> {
   final List<StreamSubscription> _subscriptions = [];
-  final webviewDesktopItemController = Modular.get<WebItemController>();
+  final webviewDesktopItemController = Modular.get<WebviewItemController>();
   final VideoPageController videoPageController =
       Modular.get<VideoPageController>();
 

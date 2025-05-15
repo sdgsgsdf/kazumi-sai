@@ -6,7 +6,7 @@ class StyleString {
   static const double cardSpace = 8;
   static const double safeSpace = 12;
   static BorderRadius mdRadius = BorderRadius.circular(10);
-  static const Radius imgRadius = Radius.circular(10);
+  static const Radius imgRadius = Radius.circular(12);
   static const double aspectRatio = 16 / 10;
 }
 
@@ -92,6 +92,7 @@ const Map<String, String> hardwareDecodersList = {
   'vdpau': 'VDPAU (Linux)',
   'vdpau-copy': 'VDPAU (Linux) (非直通)',
   'mediacodec': 'MediaCodec (Android)',
+  'mediacodec-copy': 'MediaCodec (Android) (非直通)',
   'cuda': 'CUDA (NVIDIA独占) (过时)',
   'cuda-copy': 'CUDA (NVIDIA独占) (过时) (非直通)',
   'crystalhd': 'CrystalHD (全平台) (过时)',

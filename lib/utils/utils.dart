@@ -46,7 +46,6 @@ class Utils {
     final random = Random();
     String randomElement =
         userAgentsList[random.nextInt(userAgentsList.length)];
-    print(randomElement);
     return randomElement;
   }
 

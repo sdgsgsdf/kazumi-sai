@@ -178,10 +178,10 @@ packages:
     dependency: "direct main"
     description:
       name: canvas_danmaku
-      sha256: a6761973c72328c3872fa288d0a943bf3675238a30913cf9cd0155d9b7cea9ca
+      sha256: "98fd90f257ffe93bd6a0bd857d92f40172767fc77ffb48b2379ac692e62150eb"
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "0.2.6"
+    version: "0.2.7"
   card_settings_ui:
     dependency: "direct main"
     description:
@@ -279,7 +279,7 @@ packages:
     source: hosted
     version: "4.0.8"
   crypto:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: crypto
       sha256: "1e445881f28f22d6140f181e07737b22f1e099a5e1ff94b0af2f9e4a463f4855"
@@ -383,6 +383,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.7.0"
+  equatable:
+    dependency: transitive
+    description:
+      name: equatable
+      sha256: "567c64b3cb4cf82397aac55f4f0cbd3ca20d77c6c03bedbc4ceaddc08904aef7"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "2.0.7"
   expressions:
     dependency: transitive
     description:
@@ -423,6 +431,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.1.1"
+  fl_chart:
+    dependency: "direct main"
+    description:
+      name: fl_chart
+      sha256: "74959b99b92b9eebeed1a4049426fd67c4abc3c5a0f4d12e2877097d6a11ae08"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.69.2"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -1179,6 +1195,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "0.1.2"
+  skeletonizer:
+    dependency: "direct main"
+    description:
+      name: skeletonizer
+      sha256: "0dcacc51c144af4edaf37672072156f49e47036becbc394d7c51850c5c1e884b"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.4.3"
   sky_engine:
     dependency: transitive
     description: flutter
@@ -1540,34 +1564,34 @@ packages:
     dependency: "direct main"
     description:
       name: webview_flutter
-      sha256: "889a0a678e7c793c308c68739996227c9661590605e70b1f6cf6b9a6634f7aec"
+      sha256: caf0f5a1012aa3c2d33c4215adc72dc1194bb59a2d3ed901f457965626805e66
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "4.10.0"
+    version: "4.11.0"
   webview_flutter_android:
     dependency: transitive
     description:
       name: webview_flutter_android
-      sha256: e09150b28a07933839adef0e4a088bb43e8c8d9e6b93025b01882d4067a58ab0
+      sha256: be6fa6acf69db65a9feedd9f16ead99668e9d5ea1f9b8d85286cba8da8d12e29
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "4.3.4"
+    version: "4.5.0"
   webview_flutter_platform_interface:
     dependency: transitive
     description:
       name: webview_flutter_platform_interface
-      sha256: d937581d6e558908d7ae3dc1989c4f87b786891ab47bb9df7de548a151779d8d
+      sha256: e54a2a435144af4e008bea140c06913eeb3f25db421c2ceaa932f314a45d79b9
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "2.10.0"
+    version: "2.12.0"
   webview_flutter_wkwebview:
     dependency: transitive
     description:
       name: webview_flutter_wkwebview
-      sha256: c49a98510080378b1525132f407a92c3dcd3b7145bef04fb8137724aadcf1cf0
+      sha256: "6af7d1908c9c89311c2dffcc2c9b51b88a6f055ba16fa0aa8a04cbb1c3afc9ce"
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "3.18.4"
+    version: "3.21.0"
   webview_windows:
     dependency: "direct main"
     description:

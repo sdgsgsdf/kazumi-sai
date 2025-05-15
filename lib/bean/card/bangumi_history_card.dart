@@ -5,11 +5,9 @@ import 'package:kazumi/bean/dialog/dialog_helper.dart';
 import 'package:kazumi/bean/widget/collect_button.dart';
 import 'package:kazumi/modules/history/history_module.dart';
 import 'package:kazumi/pages/history/history_controller.dart';
-import 'package:kazumi/pages/info/info_controller.dart';
 import 'package:kazumi/pages/video/video_controller.dart';
 import 'package:kazumi/plugins/plugins.dart';
 import 'package:kazumi/plugins/plugins_controller.dart';
-import 'package:kazumi/utils/constants.dart';
 import 'package:kazumi/utils/logger.dart';
 import 'package:logger/logger.dart';
 
@@ -54,7 +52,6 @@ class _BangumiHistoryCardVState extends State<BangumiHistoryCardV> {
 
   @override
   Widget build(BuildContext context) {
-    final InfoController infoController = Modular.get<InfoController>();
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -79,14 +76,14 @@ class _BangumiHistoryCardVState extends State<BangumiHistoryCardV> {
             KazumiDialog.showToast(message: '未找到关联番剧源');
             return;
           }
-          infoController.bangumiItem = widget.historyItem.bangumiItem;
+          videoPageController.bangumiItem = widget.historyItem.bangumiItem;
           videoPageController.title =
               widget.historyItem.bangumiItem.nameCn == ''
                   ? widget.historyItem.bangumiItem.name
                   : widget.historyItem.bangumiItem.nameCn;
           videoPageController.src = widget.historyItem.lastSrc;
           try {
-            await infoController.queryRoads(widget.historyItem.lastSrc,
+            await videoPageController.queryRoads(widget.historyItem.lastSrc,
                 videoPageController.currentPlugin.name);
             KazumiDialog.dismiss();
             Modular.to.pushNamed('/video/');
@@ -101,25 +98,17 @@ class _BangumiHistoryCardVState extends State<BangumiHistoryCardV> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: StyleString.imgRadius,
-                  topRight: StyleString.imgRadius,
-                  bottomLeft: StyleString.imgRadius,
-                  bottomRight: StyleString.imgRadius,
-                ),
-                child: AspectRatio(
-                  aspectRatio: 0.65,
-                  child: LayoutBuilder(builder: (context, boxConstraints) {
-                    final double maxWidth = boxConstraints.maxWidth;
-                    final double maxHeight = boxConstraints.maxHeight;
-                    return NetworkImgLayer(
-                      src: widget.historyItem.bangumiItem.images['large'] ?? '',
-                      width: maxWidth,
-                      height: maxHeight,
-                    );
-                  }),
-                ),
+              AspectRatio(
+                aspectRatio: 0.65,
+                child: LayoutBuilder(builder: (context, boxConstraints) {
+                  final double maxWidth = boxConstraints.maxWidth;
+                  final double maxHeight = boxConstraints.maxHeight;
+                  return NetworkImgLayer(
+                    src: widget.historyItem.bangumiItem.images['large'] ?? '',
+                    width: maxWidth,
+                    height: maxHeight,
+                  );
+                }),
               ),
               const SizedBox(width: 15),
               Expanded(
@@ -149,25 +138,25 @@ class _BangumiHistoryCardVState extends State<BangumiHistoryCardV> {
                           value: widget.historyItem.adapterName,
                         ),
                         propertyChip(
-                          title: '首播',
-                          value: widget.historyItem.bangumiItem.airDate,
-                        ),
-                        propertyChip(
                           title: '上次看到',
                           value: widget.historyItem.lastWatchEpisodeName.isEmpty
                               ? '第${widget.historyItem.lastWatchEpisode}话'
                               : widget.historyItem.lastWatchEpisodeName,
                         ),
-                        // propertyChip(
-                        //   title: '排名',
-                        //   value: widget.historyItem.bangumiItem.rank.toString(),
-                        //   showTitle: true,
-                        // ),
+                        propertyChip(
+                          title: '排名',
+                          value: widget.historyItem.bangumiItem.rank.toString(),
+                          showTitle: true,
+                        ),
                         // 只有 '番剧'
                         // propertyChip(
                         //   title: '种类',
                         //   value: widget.historyItem.bangumiItem.type == 2 ? '番剧' : '其他',
                         // ),
+                        propertyChip(
+                          title: '首播',
+                          value: widget.historyItem.bangumiItem.airDate,
+                        ),
                       ],
                     )
                   ],

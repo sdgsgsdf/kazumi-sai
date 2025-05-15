@@ -285,7 +285,6 @@ class _AppWidgetState extends State<AppWidget>
         }
         return MaterialApp.router(
           title: "Kazumi",
-          debugShowCheckedModeBanner: false,
           localizationsDelegates: GlobalMaterialLocalizations.delegates,
           supportedLocales: const [
             Locale.fromSubtags(

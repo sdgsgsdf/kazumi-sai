@@ -3,8 +3,6 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kazumi/bean/card/network_img_layer.dart';
 import 'package:kazumi/bean/dialog/dialog_helper.dart';
 import 'package:kazumi/modules/bangumi/bangumi_item.dart';
-import 'package:kazumi/pages/info/info_controller.dart';
-import 'package:kazumi/utils/constants.dart';
 import 'package:kazumi/utils/utils.dart';
 
 // 视频卡片 - 垂直布局
@@ -13,21 +11,18 @@ class BangumiCardV extends StatelessWidget {
     super.key,
     required this.bangumiItem,
     this.canTap = true,
-    this.longPress,
-    this.longPressEnd,
+    this.enableHero = true,
   });
 
   final BangumiItem bangumiItem;
   final bool canTap;
-  final Function()? longPress;
-  final Function()? longPressEnd;
+  final bool enableHero;
 
   @override
   Widget build(BuildContext context) {
-    final InfoController infoController = Modular.get<InfoController>();
     return Card(
       elevation: 0,
-      clipBehavior: Clip.hardEdge,
+      clipBehavior: Clip.antiAlias,
       margin: EdgeInsets.zero,
       child: GestureDetector(
         child: InkWell(
@@ -38,36 +33,32 @@ class BangumiCardV extends StatelessWidget {
               );
               return;
             }
-            print(bangumiItem);
-            infoController.bangumiItem = bangumiItem;
-            Modular.to.pushNamed('/info/');
+            Modular.to.pushNamed('/info/', arguments: bangumiItem);
           },
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: StyleString.imgRadius,
-                  topRight: StyleString.imgRadius,
-                  bottomLeft: StyleString.imgRadius,
-                  bottomRight: StyleString.imgRadius,
-                ),
-                child: AspectRatio(
-                  aspectRatio: 0.65,
-                  child: LayoutBuilder(builder: (context, boxConstraints) {
-                    final double maxWidth = boxConstraints.maxWidth;
-                    final double maxHeight = boxConstraints.maxHeight;
-                    return Hero(
-                      transitionOnUserGestures: true,
-                      tag: bangumiItem.id,
-                      child: NetworkImgLayer(
-                        src: bangumiItem.images['large'] ?? '',
-                        width: maxWidth,
-                        height: maxHeight,
-                      ),
-                    );
-                  }),
-                ),
+              AspectRatio(
+                aspectRatio: 0.65,
+                child: LayoutBuilder(builder: (context, boxConstraints) {
+                  final double maxWidth = boxConstraints.maxWidth;
+                  final double maxHeight = boxConstraints.maxHeight;
+                  return enableHero
+                      ? Hero(
+                          transitionOnUserGestures: true,
+                          tag: bangumiItem.id,
+                          child: NetworkImgLayer(
+                            src: bangumiItem.images['large'] ?? '',
+                            width: maxWidth,
+                            height: maxHeight,
+                          ),
+                        )
+                      : NetworkImgLayer(
+                          src: bangumiItem.images['large'] ?? '',
+                          width: maxWidth,
+                          height: maxHeight,
+                        );
+                }),
               ),
               BangumiContent(bangumiItem: bangumiItem)
             ],

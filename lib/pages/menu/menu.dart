@@ -154,7 +154,7 @@ class _ScaffoldMenu extends State<ScaffoldMenu> {
                     selectedIcon: Icon(Icons.settings),
                     icon: Icon(Icons.settings_outlined),
                     label: Text('我的'),
-                  )
+                  ),
                 ],
                 selectedIndex: state.selectedIndex,
                 onDestinationSelected: (int index) {

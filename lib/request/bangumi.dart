@@ -9,6 +9,7 @@ import 'package:kazumi/modules/comments/comment_response.dart';
 import 'package:kazumi/modules/characters/characters_response.dart';
 import 'package:kazumi/modules/bangumi/episode_item.dart';
 import 'package:kazumi/modules/character/character_full_item.dart';
+import 'package:kazumi/modules/staff/staff_response.dart';
 
 class BangumiHTTP {
   // why the api havn't been replaced by getCalendarBySearch?
@@ -163,23 +164,23 @@ class BangumiHTTP {
     return bangumiList;
   }
 
-  static Future<List<BangumiItem>> bangumiSearch(String keyword) async {
+  static Future<List<BangumiItem>> bangumiSearch(String keyword, {List<String> tags = const [], int offset = 0, String sort = 'heat'}) async {
     List<BangumiItem> bangumiList = [];
 
     var params = <String, dynamic>{
       'keyword': keyword,
-      'sort': 'rank',
+      'sort': sort,
       "filter": {
         "type": [2],
-        "tag": [],
-        "rank": [">0", "<=99999"],
+        "tag": tags,
+        "rank": (sort == 'rank') ? [">0", "<=99999"] : [">=0", "<=99999"],
         "nsfw": false
       },
     };
 
     try {
       final res = await Request().post(
-          Api.formatUrl(Api.bangumiRankSearch, [100, 0]),
+          Api.formatUrl(Api.bangumiRankSearch, [20, offset]),
           data: params,
           options: Options(
               headers: bangumiHTTPHeader, contentType: 'application/json'));
@@ -283,6 +284,20 @@ class BangumiHTTP {
           'Resolve bangumi character comments failed ${e.toString()}');
     }
     return commentResponse;
+  }
+
+  static Future<StaffResponse> getBangumiStaffByID(int id) async {
+    StaffResponse staffResponse = StaffResponse.fromTemplate();
+    try {
+      final res = await Request().get(Api.formatUrl(Api.bangumiStaffByIDNext, [id]),
+          options: Options(headers: bangumiHTTPHeader));
+      final jsonData = res.data;
+      staffResponse = StaffResponse.fromJson(jsonData);
+    } catch (e) {
+      KazumiLogger()
+          .log(Level.error, 'Resolve bangumi staff failed ${e.toString()}');
+    }
+    return staffResponse;
   }
 
   static Future<CharactersResponse> getCharatersByBangumiID(int id) async {

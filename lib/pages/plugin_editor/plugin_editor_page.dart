@@ -39,7 +39,7 @@ class _PluginEditorPageState extends State<PluginEditorPage> {
 
   bool muliSources = true;
   bool useWebview = true;
-  bool useNativePlayer = false;
+  bool useNativePlayer = true;
   bool usePost = false;
   bool useLegacyParser = false;
 
@@ -86,17 +86,6 @@ class _PluginEditorPageState extends State<PluginEditorPage> {
             width: (MediaQuery.of(context).size.width > 1000) ? 1000 : null,
             child: Column(
               children: [
-                SwitchListTile(
-                  title: const Text('内置播放器'),
-                  subtitle: const Text('调试时保持禁用'),
-                  value: useNativePlayer,
-                  onChanged: (bool value) {
-                    setState(() {
-                      useNativePlayer = value;
-                    });
-                  },
-                ),
-                const SizedBox(height: 20),
                 TextField(
                   controller: nameController,
                   decoration: const InputDecoration(
@@ -203,6 +192,16 @@ class _PluginEditorPageState extends State<PluginEditorPage> {
                         });
                       },
                     ),
+                    SwitchListTile(
+                      title: const Text('内置播放器'),
+                      subtitle: const Text('使用内置播放器播放视频'),
+                      value: useNativePlayer,
+                      onChanged: (bool value) {
+                        setState(() {
+                          useNativePlayer = value;
+                        });
+                      },
+                    ),
                     const SizedBox(height: 20),
                     TextField(
                       controller: userAgentController,
@@ -226,7 +225,7 @@ class _PluginEditorPageState extends State<PluginEditorPage> {
         child: const Icon(Icons.save),
         onPressed: () async {
           plugin.api = apiController.text;
-          plugin.type = apiController.text;
+          plugin.type = typeController.text;
           plugin.name = nameController.text;
           plugin.version = versionController.text;
           plugin.userAgent = userAgentController.text;

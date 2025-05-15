@@ -1,9 +1,6 @@
 import 'package:kazumi/bean/dialog/dialog_helper.dart';
 import 'package:kazumi/modules/bangumi/bangumi_item.dart';
 import 'package:kazumi/pages/collect/collect_controller.dart';
-import 'package:kazumi/plugins/plugins_controller.dart';
-import 'package:kazumi/pages/video/video_controller.dart';
-import 'package:kazumi/plugins/plugins.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kazumi/modules/search/plugin_search_module.dart';
 import 'package:kazumi/request/bangumi.dart';
@@ -12,7 +9,7 @@ import 'package:logger/logger.dart';
 import 'package:kazumi/utils/logger.dart';
 import 'package:kazumi/modules/comments/comment_item.dart';
 import 'package:kazumi/modules/characters/character_item.dart';
-import 'package:kazumi/modules/bangumi/episode_item.dart';
+import 'package:kazumi/modules/staff/staff_item.dart';
 
 part 'info_controller.g.dart';
 
@@ -21,7 +18,9 @@ class InfoController = _InfoController with _$InfoController;
 abstract class _InfoController with Store {
   final CollectController collectController = Modular.get<CollectController>();
   late BangumiItem bangumiItem;
-  EpisodeInfo episodeInfo = EpisodeInfo.fromTemplate();
+
+  @observable
+  bool isLoading = false;
 
   @observable
   var pluginSearchResponseList = ObservableList<PluginSearchResponse>();
@@ -33,12 +32,13 @@ abstract class _InfoController with Store {
   var commentsList = ObservableList<CommentItem>();
 
   @observable
-  var episodeCommentsList = ObservableList<EpisodeCommentItem>();
-  
-  @observable
   var characterList = ObservableList<CharacterItem>();
 
+  @observable
+  var staffList = ObservableList<StaffFullItem>();
+
   Future<void> queryBangumiInfoByID(int id, {String type = "init"}) async {
+    isLoading = true;
     await BangumiHTTP.getBangumiInfoByID(id).then((value) {
       if (value != null) {
         if (type == "init") {
@@ -51,28 +51,13 @@ abstract class _InfoController with Store {
           bangumiItem.airWeekday = value.airWeekday;
           bangumiItem.alias = value.alias;
           bangumiItem.ratingScore = value.ratingScore;
+          bangumiItem.votes = value.votes;
+          bangumiItem.votesCount = value.votesCount;
         }
         collectController.updateLocalCollect(bangumiItem);
+        isLoading = false;
       }
     });
-  }
-
-  Future<void> queryRoads(String url, String pluginName) async {
-    final PluginsController pluginsController =
-        Modular.get<PluginsController>();
-    final VideoPageController videoPageController =
-        Modular.get<VideoPageController>();
-    videoPageController.roadList.clear();
-    for (Plugin plugin in pluginsController.pluginList) {
-      if (plugin.name == pluginName) {
-        videoPageController.roadList
-            .addAll(await plugin.querychapterRoads(url));
-      }
-    }
-    KazumiLogger()
-        .log(Level.info, '播放列表长度 ${videoPageController.roadList.length}');
-    KazumiLogger().log(
-        Level.info, '第一播放列表选集数 ${videoPageController.roadList[0].data.length}');
   }
 
   Future<void> queryBangumiCommentsByID(int id, {int offset = 0}) async {
@@ -85,15 +70,6 @@ abstract class _InfoController with Store {
     KazumiLogger().log(Level.info, '已加载评论列表长度 ${commentsList.length}');
   }
 
-  Future<void> queryBangumiEpisodeCommentsByID(int id, int episode) async {
-    episodeCommentsList.clear();
-    episodeInfo = await BangumiHTTP.getBangumiEpisodeByID(id, episode);
-    await BangumiHTTP.getBangumiCommentsByEpisodeID(episodeInfo.id).then((value) {
-      episodeCommentsList.addAll(value.commentList);
-    });
-    KazumiLogger().log(Level.info, '已加载评论列表长度 ${episodeCommentsList.length}');
-  }
-  
   Future<void> queryBangumiCharactersByID(int id) async {
     characterList.clear();
     await BangumiHTTP.getCharatersByBangumiID(id).then((value) {
@@ -103,14 +79,25 @@ abstract class _InfoController with Store {
       '主角': 1,
       '配角': 2,
       '客串': 3,
-      '未知': 4,
     };
+
     try {
-      characterList.sort((a, b) =>
-          relationValue[a.relation]!.compareTo(relationValue[b.relation]!));
+      characterList.sort((a, b) {
+        int valueA = relationValue[a.relation] ?? 4;
+        int valueB = relationValue[b.relation] ?? 4;
+        return valueA.compareTo(valueB);
+      });
     } catch (e) {
       KazumiDialog.showToast(message: '$e');
     }
     KazumiLogger().log(Level.info, '已加载角色列表长度 ${characterList.length}');
+  }
+
+  Future<void> queryBangumiStaffsByID(int id) async {
+    staffList.clear();
+    await BangumiHTTP.getBangumiStaffByID(id).then((value) {
+      staffList.addAll(value.data);
+    });
+    KazumiLogger().log(Level.info, '已加载制作人员列表长度 ${staffList.length}');
   }
 }

@@ -37,7 +37,7 @@ class _AboutPageState extends State<AboutPage> {
   @override
   void initState() {
     super.initState();
-    autoUpdate = setting.get(SettingBoxKey.autoUpdate, defaultValue: false);
+    autoUpdate = setting.get(SettingBoxKey.autoUpdate, defaultValue: true);
     _getCacheSize();
   }
 

@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.6.0+10600
+version: 1.6.7+10607
 
 environment:
   sdk: '>=3.3.4 <4.0.0'
@@ -50,7 +50,7 @@ dependencies:
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   cached_network_image: ^3.4.1
-  card_settings_ui: ^1.1.1
+  card_settings_ui: ^1.1.3
 
   # fvp: ^0.28.0
   # video_player: ^2.9.1
@@ -66,8 +66,8 @@ dependencies:
   window_manager: ^0.4.2
   xpath_selector: ^3.0.2
   xpath_selector_html_parser: ^3.0.1
-  webview_flutter: ^4.9.0
-  canvas_danmaku: ^0.2.6
+  webview_flutter: ^4.11.0
+  canvas_danmaku: ^0.2.7
   webdav_client: ^1.2.2
   tray_manager: ^0.3.2
   dlna_dart: ^0.0.8
@@ -83,7 +83,8 @@ dependencies:
   synchronized: any
   flutter_svg: ^2.0.17
   antlr4: ^4.13.2
-  crypto: ^3.0.6
+  fl_chart: ^0.69.2
+  skeletonizer: ^1.4.3
   webview_windows:
     git:
       url: https://github.com/Predidit/flutter-webview-windows.git
@@ -158,12 +159,17 @@ dev_dependencies:
 
 flutter_launcher_icons:
   android: true
+  ios: true
   remove_alpha_ios: true
   image_path: assets/images/logo/logo_android.png
   image_path_android: assets/images/logo/logo_android.png
+  image_path_ios: assets/images/logo/logo_ios.png
   adaptive_icon_background: "#ffffff"
   adaptive_icon_foreground: assets/images/logo/logo_android.png
   adaptive_icon_monochrome: assets/images/logo/logo_android.png
+  macos:
+    generate: true
+    image_path: assets/images/logo/logo_rounded.png
   windows:
     generate: true
     image_path: assets/images/logo/logo_rounded.png
@@ -184,6 +190,7 @@ msix_config:
   logo_path: assets/images/logo/logo_rounded.png
   sign_msix: false
   install_certificate: false
+  build_windows: false
 
 # The following section is specific to Flutter packages.
 flutter:

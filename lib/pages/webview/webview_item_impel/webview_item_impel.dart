@@ -11,7 +11,7 @@ class WebviewItemImpel extends StatefulWidget {
 }
 
 class _WebviewItemImpelState extends State<WebviewItemImpel> {
-  final webviewItemController = Modular.get<WebItemController>();
+  final webviewItemController = Modular.get<WebviewItemController>();
 
   @override
   void initState() {

@@ -6,7 +6,7 @@ import 'package:kazumi/pages/webview/webview_controller_impel/webview_windows_co
 import 'package:kazumi/pages/webview/webview_controller_impel/webview_linux_controller_impel.dart';
 import 'package:kazumi/pages/webview/webview_controller_impel/webview_apple_controller_impel.dart';
 
-abstract class WebItemController<T> {
+abstract class WebviewItemController<T> {
   // Webview controller
   T? webviewController;
 
@@ -57,7 +57,7 @@ abstract class WebItemController<T> {
 }
 
 class WebviewItemControllerFactory {
-  static WebItemController getController() {
+  static WebviewItemController getController() {
     if (Platform.isWindows) {
       return WebviewWindowsItemControllerImpel();
     }

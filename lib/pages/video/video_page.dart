@@ -3,7 +3,6 @@ import 'package:canvas_danmaku/models/danmaku_content_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kazumi/bean/appbar/sys_app_bar.dart';
-import 'package:kazumi/pages/info/info_controller.dart';
 import 'package:kazumi/pages/player/player_controller.dart';
 import 'package:kazumi/pages/video/video_controller.dart';
 import 'package:kazumi/pages/webview/webview_item.dart';
@@ -34,13 +33,12 @@ class VideoPage extends StatefulWidget {
 class _VideoPageState extends State<VideoPage>
     with TickerProviderStateMixin, WindowListener {
   Box setting = GStorage.setting;
-  final InfoController infoController = Modular.get<InfoController>();
   final VideoPageController videoPageController =
       Modular.get<VideoPageController>();
   final PlayerController playerController = Modular.get<PlayerController>();
   final HistoryController historyController = Modular.get<HistoryController>();
-  final WebItemController webviewItemController =
-      Modular.get<WebItemController>();
+  final WebviewItemController webviewItemController =
+      Modular.get<WebviewItemController>();
   late bool playResume;
   bool showDebugLog = false;
   bool jumpNeed = true;
@@ -51,6 +49,7 @@ class _VideoPageState extends State<VideoPage>
   late GridObserverController observerController;
   late AnimationController animation;
   late Animation<Offset> _rightOffsetAnimation;
+  late Animation<double> _maskOpacityAnimation;
   late TabController tabController;
 
   // 当前播放列表
@@ -81,7 +80,7 @@ class _VideoPageState extends State<VideoPage>
     tabController = TabController(length: 2, vsync: this);
     observerController = GridObserverController(controller: scrollController);
     animation = AnimationController(
-      duration: const Duration(milliseconds: 100),
+      duration: const Duration(milliseconds: 120),
       vsync: this,
     );
     _rightOffsetAnimation = Tween<Offset>(
@@ -89,25 +88,30 @@ class _VideoPageState extends State<VideoPage>
       end: const Offset(0.0, 0.0),
     ).animate(CurvedAnimation(
       parent: animation,
-      curve: Curves.easeInOut,
+      curve: Curves.easeOut,
+    ));
+    _maskOpacityAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: animation,
+      curve: Curves.easeIn,
     ));
     videoPageController.currentEpisode = 1;
     videoPageController.currentRoad = 0;
     videoPageController.historyOffset = 0;
     videoPageController.showTabBody = true;
     playResume = setting.get(SettingBoxKey.playResume, defaultValue: true);
-    if (infoController.bangumiItem != null) {
-      var progress = historyController.lastWatching(
-          infoController.bangumiItem, videoPageController.currentPlugin.name);
-      if (progress != null) {
-        if (videoPageController.roadList.length > progress.road) {
-          if (videoPageController.roadList[progress.road].data.length >=
-              progress.episode) {
-            videoPageController.currentEpisode = progress.episode;
-            videoPageController.currentRoad = progress.road;
-            if (playResume) {
-              videoPageController.historyOffset = progress.progress.inSeconds;
-            }
+    var progress = historyController.lastWatching(
+        videoPageController.bangumiItem, videoPageController.currentPlugin.name);
+    if (progress != null) {
+      if (videoPageController.roadList.length > progress.road) {
+        if (videoPageController.roadList[progress.road].data.length >=
+            progress.episode) {
+          videoPageController.currentEpisode = progress.episode;
+          videoPageController.currentRoad = progress.road;
+          if (playResume) {
+            videoPageController.historyOffset = progress.progress.inSeconds;
           }
         }
       }
@@ -162,8 +166,8 @@ class _VideoPageState extends State<VideoPage>
         ScreenBrightnessPlatform.instance.resetApplicationScreenBrightness();
       } catch (_) {}
     }
-    infoController.episodeInfo.reset();
-    infoController.episodeCommentsList.clear();
+    videoPageController.episodeInfo.reset();
+    videoPageController.episodeCommentsList.clear();
     Utils.unlockScreenRotation();
     tabController.dispose();
     super.dispose();
@@ -209,8 +213,8 @@ class _VideoPageState extends State<VideoPage>
     clearWebviewLog();
     hideDebugConsole();
     videoPageController.loading = true;
-    infoController.episodeInfo.reset();
-    infoController.episodeCommentsList.clear();
+    videoPageController.episodeInfo.reset();
+    videoPageController.episodeCommentsList.clear();
     await playerController.stop();
     await videoPageController.changeEpisode(episode,
         currentRoad: currentRoad, offset: offset);
@@ -241,7 +245,7 @@ class _VideoPageState extends State<VideoPage>
 
   void closeTabBodyAnimated() {
     animation.reverse();
-    Future.delayed(const Duration(milliseconds: 100), () {
+    Future.delayed(const Duration(milliseconds: 120), () {
       videoPageController.showTabBody = false;
     });
     keyboardFocus.requestFocus();
@@ -361,7 +365,6 @@ class _VideoPageState extends State<VideoPage>
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (bool didPop, Object? result) {
-        debugPrint("checkPoint: didPop: $didPop");
         if (didPop) {
           return;
         }
@@ -417,12 +420,24 @@ class _VideoPageState extends State<VideoPage>
 
                     // when is wideScreen, show tabBody on the right side with SlideTransition
                     if (isWideScreen && videoPageController.showTabBody) ...[
-                      GestureDetector(
-                        onTap: closeTabBodyAnimated,
-                        child: Container(
-                          color: Colors.black38,
-                          width: double.infinity,
-                          height: double.infinity,
+                      FadeTransition(
+                        opacity: _maskOpacityAnimation,
+                        child: GestureDetector(
+                          onTap: closeTabBodyAnimated,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.centerLeft,
+                                end: Alignment.centerRight,
+                                colors: [
+                                  Colors.black.withValues(alpha: 0.5),
+                                  Colors.transparent,
+                                ],
+                              ),
+                            ),
+                            width: double.infinity,
+                            height: double.infinity,
+                          ),
                         ),
                       ),
                       SlideTransition(
@@ -727,7 +742,7 @@ class _VideoPageState extends State<VideoPage>
                     return;
                   }
                   KazumiLogger().log(Level.info, '视频链接为 $urlItem');
-                  // closeTabBodyAnimated();
+                  closeTabBodyAnimated();
                   changeEpisode(count0, currentRoad: currentRoad);
                 },
                 child: Padding(

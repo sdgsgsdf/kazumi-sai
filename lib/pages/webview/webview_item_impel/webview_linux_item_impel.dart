@@ -10,7 +10,7 @@ class WebviewLinuxItemImpel extends StatefulWidget {
 }
 
 class _WebviewLinuxItemImpelState extends State<WebviewLinuxItemImpel> {
-  final webviewLinuxItemController = Modular.get<WebItemController>();
+  final webviewLinuxItemController = Modular.get<WebviewItemController>();
 
   @override
   void initState() {

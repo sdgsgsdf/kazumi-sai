@@ -34,7 +34,6 @@ void main() async {
   } catch (_) {
     runApp(MaterialApp(
         title: '初始化失败',
-        debugShowCheckedModeBanner: false,
         localizationsDelegates: GlobalMaterialLocalizations.delegates,
         supportedLocales: const [
           Locale.fromSubtags(
