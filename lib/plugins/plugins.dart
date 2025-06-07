@@ -1,7 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kazumi/modules/search/plugin_search_module.dart';
 import 'package:kazumi/modules/roads/road_module.dart';
+import 'package:kazumi/pages/web_yi/web_yi_controller.dart';
 import 'package:kazumi/request/request.dart';
 import 'package:html/parser.dart';
 import 'package:logger/logger.dart';
@@ -9,6 +11,8 @@ import 'package:kazumi/request/api.dart';
 import 'package:kazumi/utils/logger.dart';
 import 'package:path/path.dart';
 import 'package:xpath_selector_html_parser/xpath_selector_html_parser.dart';
+
+WebYiController webYiController = Modular.get<WebYiController>();
 
 class Plugin {
   String api;
@@ -20,7 +24,9 @@ class Plugin {
   bool useNativePlayer;
   bool usePost;
   bool useLegacyParser;
+  bool reloadWithWeb;
   String userAgent;
+  String cookie;
   String baseUrl;
   String searchURL;
   String searchImg;
@@ -45,7 +51,9 @@ class Plugin {
     required this.useNativePlayer,
     required this.usePost,
     required this.useLegacyParser,
+    this.reloadWithWeb = false,
     required this.userAgent,
+    this.cookie = '',
     required this.baseUrl,
     required this.searchURL,
     required this.searchList,
@@ -72,7 +80,9 @@ class Plugin {
         useNativePlayer: json['useNativePlayer'],
         usePost: json['usePost'] ?? false,
         useLegacyParser: json['useLegacyParser'] ?? false,
+        reloadWithWeb:json['reloadWithWeb'] ?? false,
         userAgent: json['userAgent'],
+        cookie: json['cookie'] ?? '',
         baseUrl: json['baseURL'],
         searchURL: json['searchURL'],
         searchList: json['searchList'],
@@ -99,7 +109,9 @@ class Plugin {
       useNativePlayer: false,
       usePost: false,
       useLegacyParser: false,
+      reloadWithWeb: false,
       userAgent: '',
+      cookie: '',
       baseUrl: '',
       searchURL: '',
       searchList: '',
@@ -127,7 +139,9 @@ class Plugin {
     data['useNativePlayer'] = useNativePlayer;
     data['usePost'] = usePost;
     data['useLegacyParser'] = useLegacyParser;
+    data['reloadWithWeb'] = reloadWithWeb;
     data['userAgent'] = userAgent;
+    data['cookie'] = cookie;
     data['baseURL'] = baseUrl;
     data['searchURL'] = searchURL;
     data['searchList'] = searchList;
@@ -144,7 +158,6 @@ class Plugin {
   }
 
   Future<Map<String, String>> queryTags() async {
-
     if (tags.isNotEmpty) {
       final urlPattern = RegExp(r'@url\[(.*?)\]', caseSensitive: false);
       final xpathPattern = RegExp(
@@ -165,7 +178,6 @@ class Plugin {
           if (urlMatch != null && xpathMatch != null) {
             final url = urlMatch.group(1)!.trim();
             final xpath = xpathMatch.group(1)!.trim();
-            print(xpath);
 
             if (url.isNotEmpty && xpath.isNotEmpty) {
               final resp = await Request().get(
@@ -174,20 +186,21 @@ class Plugin {
                 shouldRethrow: false,
                 extra: {'customError': ''},
               );
-              final htmlString =resp.data.toString();
+              final htmlString = resp.data.toString();
               final htmlElement = parse(htmlString).documentElement!;
-              if(getResultType(xpath)==XPathResultType.attribute){
-                keywords[key] = htmlElement.queryXPath(xpath).attrs.firstOrNull ?? '';
-              }else if(getResultType(xpath)==XPathResultType.text){
+              if (getResultType(xpath) == XPathResultType.attribute) {
+                keywords[key] =
+                    htmlElement.queryXPath(xpath).attrs.firstOrNull ?? '';
+              } else if (getResultType(xpath) == XPathResultType.text) {
                 keywords[key] = htmlElement.queryXPath(xpath).node?.text ?? '';
-              }else{
-                keywords[key]='';
+              } else {
+                keywords[key] = '';
               }
             }
           }
         } catch (e) {
           debugPrint('解析失败 [$key]: ${e.toString()}');
-          keywords[key] = '解析错误';
+          keywords[key] = '';
         }
       });
     }
@@ -201,8 +214,6 @@ class Plugin {
     // 使用 replaceAllMapped 一次性替换所有匹配项
     queryURL = queryURL.replaceAllMapped(tagPattern, (Match match) {
       final tagName = match.group(1)!.trim(); // 提取标签名并去除两端空格
-      print(keywords);
-      print(keywords[tagName]);
       return Uri.encodeComponent(keywords[tagName] ?? ''); // 替换为编码后的值，不存在则返回空
     });
     return queryURL;
@@ -213,9 +224,20 @@ class Plugin {
     await queryTags();
     String queryURL = searchURL.replaceAll('@keyword', keyword);
     if (queryURL.contains('@pagenum')) {
-      queryURL = queryURL.replaceAll('@pagenum', page > 0 ? page.toString() : '1');
+      queryURL =
+          queryURL.replaceAll('@pagenum', page > 0 ? page.toString() : '1');
     }
     queryURL = replaceTag(queryURL);
+
+    //todo:根据reloadWithWeb实现web爬取
+
+    // if(reloadWithWeb){
+    //   await webYiController.init();
+    //   await webYiController.loadUrl(queryURL);
+    //   Modular.to.pushNamed('/webYi/');
+    //
+    // }
+
     dynamic resp;
     List<SearchItem> searchItems = [];
     if (usePost) {
@@ -229,6 +251,7 @@ class Plugin {
       var httpHeaders = {
         'referer': '$baseUrl/',
         'Content-Type': 'application/x-www-form-urlencoded',
+        'Cookie': cookie,
       };
       resp = await Request().post(postUri.toString(),
           options: Options(headers: httpHeaders),
@@ -238,6 +261,7 @@ class Plugin {
     } else {
       var httpHeaders = {
         'referer': '$baseUrl/',
+        'Cookie': cookie,
       };
       resp = await Request().get(queryURL,
           options: Options(headers: httpHeaders),
@@ -299,6 +323,7 @@ class Plugin {
     }
     var httpHeaders = {
       'referer': '$baseUrl/',
+      'Cookie': cookie,
     };
     try {
       var resp =
@@ -333,10 +358,7 @@ class Plugin {
   }
 }
 
-enum XPathResultType {
-  attribute,
-  text
-}
+enum XPathResultType { attribute, text }
 
 XPathResultType getResultType(String xpath) {
   if (xpath.endsWith('/text()')) return XPathResultType.text;

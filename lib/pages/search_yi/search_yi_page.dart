@@ -6,6 +6,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kazumi/bean/dialog/dialog_helper.dart';
 import 'package:kazumi/modules/bangumi/bangumi_item.dart';
 import 'package:kazumi/pages/info/info_controller.dart';
+import 'package:kazumi/pages/web_yi/web_yi_controller.dart';
 import 'package:kazumi/plugins/plugins.dart';
 import 'package:kazumi/plugins/plugins_controller.dart';
 import 'package:kazumi/request/query_manager.dart';
@@ -39,7 +40,7 @@ class _SearchYiPageState extends State<SearchYiPage>
       Modular.get<VideoPageController>();
   final PluginsController pluginsController = Modular.get<PluginsController>();
   late TabController tabController;
-
+  late WebYiController webYiController;
   //分页信息
   final Map<String, int> _currentPages = {}; // 当前页码
   final Map<String, int> _totalPages = {}; // 总页数
@@ -57,6 +58,8 @@ class _SearchYiPageState extends State<SearchYiPage>
     queryManager?.queryAllSource('');
     tabController =
         TabController(length: pluginsController.pluginList.length, vsync: this);
+
+    webYiController = Modular.get<WebYiController>();
   }
 
   int _generateUniqueId(String name) {
@@ -82,6 +85,7 @@ class _SearchYiPageState extends State<SearchYiPage>
     videoPageController.currentEpisode = 1;
     _focusNode.dispose();
     tabController.dispose();
+    webYiController.dispose();
     super.dispose();
   }
 
@@ -316,6 +320,19 @@ class _SearchYiPageState extends State<SearchYiPage>
                                     text: '重试',
                                   ),
                                   GeneralErrorButton(
+                                    onPressed: () async {
+                                      //todo:打开web
+                                      await webYiController.init();
+                                      await webYiController.loadUrl('https://www.ciyuancheng.net/');
+                                      Modular.to.pushNamed('/webYi/');
+                                      print(await webYiController.getCookie('https://www.ciyuancheng.net/'));
+                                      String html = await webYiController.getHtml('https://www.ciyuancheng.net/');
+                                      print(await webYiController.getHtml('https://www.ciyuancheng.net/'));
+                                      print('html.length${html.length}');
+                                    },
+                                    text: 'webview',
+                                  ),
+                                  GeneralErrorButton(
                                     onPressed: () {
                                       KazumiDialog.show(builder: (context) {
                                         return AlertDialog(
@@ -349,6 +366,17 @@ class _SearchYiPageState extends State<SearchYiPage>
                                 errMsg:
                                     '${plugin.name} 本页无结果 使用其他搜索词或切换到其他视频来源',
                                 actions: [
+                                  GeneralErrorButton(
+                                    onPressed: () async {
+                                      //todo:打开web
+                                      await webYiController.init();
+                                      print(await webYiController.getCookie('https://www.ciyuancheng.net/'));
+                                      String html = await webYiController.getHtml('https://www.ciyuancheng.net/');
+                                      print(await webYiController.getHtml('https://www.ciyuancheng.net/'));
+                                      print('html.length${html.length}');
+                                    },
+                                    text: 'webview',
+                                  ),
                                   GeneralErrorButton(
                                     onPressed: () {
                                       KazumiDialog.show(builder: (context) {

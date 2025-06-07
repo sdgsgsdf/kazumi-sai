@@ -32,6 +32,7 @@ class _PluginEditorPageState extends State<PluginEditorPage> {
   final TextEditingController chapterResultNameController =
       TextEditingController();
   final TextEditingController refererController = TextEditingController();
+  final TextEditingController cookieController = TextEditingController();
 
   final Map<String, String> _editedTags = {};
   final TextEditingController _tagKeyController = TextEditingController();
@@ -40,6 +41,7 @@ class _PluginEditorPageState extends State<PluginEditorPage> {
   bool muliSources = true;
   bool useWebview = true;
   bool useNativePlayer = true;
+  bool reloadWithWeb = true;
   bool usePost = false;
   bool useLegacyParser = false;
 
@@ -63,9 +65,11 @@ class _PluginEditorPageState extends State<PluginEditorPage> {
     chapterResultController.text = plugin.chapterResult;
     chapterResultNameController.text = plugin.chapterResultName;
     refererController.text = plugin.referer;
+    cookieController.text = plugin.cookie;
     muliSources = plugin.muliSources;
     useWebview = plugin.useWebview;
     useNativePlayer = plugin.useNativePlayer;
+    reloadWithWeb = plugin.reloadWithWeb;
     usePost = plugin.usePost;
     useLegacyParser = plugin.useLegacyParser;
     _editedTags.addAll(plugin.tags);
@@ -214,6 +218,23 @@ class _PluginEditorPageState extends State<PluginEditorPage> {
                       decoration: const InputDecoration(
                           labelText: 'Referer', border: OutlineInputBorder()),
                     ),
+                    const SizedBox(height: 20),
+                    TextField(
+                      controller: cookieController,
+                      decoration: const InputDecoration(
+                          labelText: 'cookie', border: OutlineInputBorder()),
+                    ),
+                    const SizedBox(height: 20),
+                    SwitchListTile(
+                      title: const Text('webview'),
+                      subtitle: const Text('使用webview重新加载'),
+                      value: reloadWithWeb,
+                      onChanged: (bool value) {
+                        setState(() {
+                          reloadWithWeb = value;
+                        });
+                      },
+                    ),
                   ],
                 ),
               ],
@@ -229,6 +250,7 @@ class _PluginEditorPageState extends State<PluginEditorPage> {
           plugin.name = nameController.text;
           plugin.version = versionController.text;
           plugin.userAgent = userAgentController.text;
+          plugin.cookie = cookieController.text;
           plugin.baseUrl = baseURLController.text;
           plugin.searchURL = searchURLController.text;
           plugin.searchList = searchListController.text;
@@ -242,6 +264,7 @@ class _PluginEditorPageState extends State<PluginEditorPage> {
           plugin.muliSources = muliSources;
           plugin.useWebview = useWebview;
           plugin.useNativePlayer = useNativePlayer;
+          plugin.reloadWithWeb = reloadWithWeb;
           plugin.usePost = usePost;
           plugin.useLegacyParser = useLegacyParser;
           plugin.referer = refererController.text;
@@ -286,7 +309,8 @@ class _PluginEditorPageState extends State<PluginEditorPage> {
               if (_tagKeyController.text.isNotEmpty &&
                   _tagValueController.text.isNotEmpty) {
                 setState(() {
-                  _editedTags[_tagKeyController.text] = _tagValueController.text;
+                  _editedTags[_tagKeyController.text] =
+                      _tagValueController.text;
                   _tagKeyController.clear();
                   _tagValueController.clear();
                 });
@@ -304,32 +328,37 @@ class _PluginEditorPageState extends State<PluginEditorPage> {
       constraints: const BoxConstraints(maxHeight: 200),
       child: ListView(
         shrinkWrap: true,
-        children: _editedTags.entries.map((entry) => ListTile(
-          title: Text('${entry.key}: ${entry.value}'),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.edit),
-                onPressed: () => _showEditTagDialog(entry.key, entry.value),
-              ),
-              IconButton(
-                icon: const Icon(Icons.delete),
-                onPressed: () {
-                  setState(() => _editedTags.remove(entry.key));
-                },
-              ),
-            ],
-          ),
-        )).toList(),
+        children: _editedTags.entries
+            .map((entry) => ListTile(
+                  title: Text('${entry.key}: ${entry.value}'),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit),
+                        onPressed: () =>
+                            _showEditTagDialog(entry.key, entry.value),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () {
+                          setState(() => _editedTags.remove(entry.key));
+                        },
+                      ),
+                    ],
+                  ),
+                ))
+            .toList(),
       ),
     );
   }
 
 // 添加新的编辑标签对话框方法
   void _showEditTagDialog(String oldKey, String oldValue) {
-    final TextEditingController keyController = TextEditingController(text: oldKey);
-    final TextEditingController valueController = TextEditingController(text: oldValue);
+    final TextEditingController keyController =
+        TextEditingController(text: oldKey);
+    final TextEditingController valueController =
+        TextEditingController(text: oldValue);
 
     showDialog(
       context: context,
@@ -382,5 +411,4 @@ class _PluginEditorPageState extends State<PluginEditorPage> {
       ),
     );
   }
-
 }

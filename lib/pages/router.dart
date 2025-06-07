@@ -4,6 +4,7 @@ import 'package:kazumi/pages/my/my_module.dart';
 import 'package:kazumi/pages/search_yi/search_yi_module.dart';
 import 'package:kazumi/pages/timeline/timeline_module.dart';
 import 'package:kazumi/pages/collect/collect_module.dart';
+import 'package:kazumi/pages/web_yi/web_yi_modle.dart';
 
 class MenuRouteItem {
   final String path;
