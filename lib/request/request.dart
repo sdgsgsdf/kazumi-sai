@@ -23,15 +23,8 @@ class Request {
 
   // 设置请求头
   static void setOptionsHeaders() {
-    dio.options.headers = {
-      'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36 Edg/135.0.0.0',
-      'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-      'accept-language': 'en-US,en;q=0.9',
-      'sec-fetch-site': 'same-origin',
-      'sec-fetch-mode': 'navigate',
-    };
     dio.options.headers['referer'] = '';
-    // dio.options.headers['user-agent'] = Utils.getRandomUA();
+    dio.options.headers['user-agent'] = Utils.getRandomUA();
   }
 
   // 设置代理

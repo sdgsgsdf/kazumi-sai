@@ -11,6 +11,7 @@ import 'package:kazumi/request/api.dart';
 import 'package:kazumi/utils/logger.dart';
 import 'package:path/path.dart';
 import 'package:xpath_selector_html_parser/xpath_selector_html_parser.dart';
+import 'package:kazumi/utils/utils.dart';
 
 WebYiController webYiController = Modular.get<WebYiController>();
 
@@ -40,6 +41,7 @@ class Plugin {
   String referer;
   Map<String, String> tags;
   Map<String, String> keywords;
+  String htmlIdentifier;
 
   Plugin({
     required this.api,
@@ -67,65 +69,68 @@ class Plugin {
     required this.referer,
     required this.tags,
     required this.keywords,
+    this.htmlIdentifier = '',
   });
 
   factory Plugin.fromJson(Map<String, dynamic> json) {
     return Plugin(
-        api: json['api'],
-        type: json['type'],
-        name: json['name'],
-        version: json['version'],
-        muliSources: json['muliSources'],
-        useWebview: json['useWebview'],
-        useNativePlayer: json['useNativePlayer'],
-        usePost: json['usePost'] ?? false,
-        useLegacyParser: json['useLegacyParser'] ?? false,
-        reloadWithWeb:json['reloadWithWeb'] ?? false,
-        userAgent: json['userAgent'],
-        cookie: json['cookie'] ?? '',
-        baseUrl: json['baseURL'],
-        searchURL: json['searchURL'],
-        searchList: json['searchList'],
-        searchName: json['searchName'],
-        searchImg: json['searchImg'] ?? '',
-        searchResult: json['searchResult'],
-        chapterRoads: json['chapterRoads'],
-        chapterItems: json['chapterItems'] ?? '',
-        chapterResult: json['chapterResult'],
-        chapterResultName: json['chapterResultName'] ?? '',
-        referer: json['referer'] ?? '',
-        tags: Map<String, String>.from(json['tags'] ?? {}),
-        keywords: {}); // 添加tags字段
+      api: json['api'],
+      type: json['type'],
+      name: json['name'],
+      version: json['version'],
+      muliSources: json['muliSources'],
+      useWebview: json['useWebview'],
+      useNativePlayer: json['useNativePlayer'],
+      usePost: json['usePost'] ?? false,
+      useLegacyParser: json['useLegacyParser'] ?? false,
+      reloadWithWeb: json['reloadWithWeb'] ?? false,
+      userAgent: json['userAgent'],
+      cookie: json['cookie'] ?? '',
+      baseUrl: json['baseURL'],
+      searchURL: json['searchURL'],
+      searchList: json['searchList'],
+      searchName: json['searchName'],
+      searchImg: json['searchImg'] ?? '',
+      searchResult: json['searchResult'],
+      chapterRoads: json['chapterRoads'],
+      chapterItems: json['chapterItems'] ?? '',
+      chapterResult: json['chapterResult'],
+      chapterResultName: json['chapterResultName'] ?? '',
+      referer: json['referer'] ?? '',
+      tags: Map<String, String>.from(json['tags'] ?? {}),
+      keywords: Map<String, String>.from(json['keywords'] ?? {}),
+      htmlIdentifier: json['htmlIdentifier'] ?? '',
+    ); // 添加tags字段
   }
 
   factory Plugin.fromTemplate() {
     return Plugin(
-      api: Api.apiLevel.toString(),
-      type: 'anime',
-      name: '',
-      version: '',
-      muliSources: true,
-      useWebview: true,
-      useNativePlayer: false,
-      usePost: false,
-      useLegacyParser: false,
-      reloadWithWeb: false,
-      userAgent: '',
-      cookie: '',
-      baseUrl: '',
-      searchURL: '',
-      searchList: '',
-      searchName: '',
-      searchImg: '',
-      searchResult: '',
-      chapterRoads: '',
-      chapterItems: '',
-      chapterResult: '',
-      chapterResultName: '',
-      referer: '',
-      tags: {},
-      keywords: {},
-    );
+        api: Api.apiLevel.toString(),
+        type: 'anime',
+        name: '',
+        version: '',
+        muliSources: true,
+        useWebview: true,
+        useNativePlayer: false,
+        usePost: false,
+        useLegacyParser: false,
+        reloadWithWeb: false,
+        userAgent: '',
+        cookie: '',
+        baseUrl: '',
+        searchURL: '',
+        searchList: '',
+        searchName: '',
+        searchImg: '',
+        searchResult: '',
+        chapterRoads: '',
+        chapterItems: '',
+        chapterResult: '',
+        chapterResultName: '',
+        referer: '',
+        tags: {},
+        keywords: {},
+        htmlIdentifier: '');
   }
 
   Map<String, dynamic> toJson() {
@@ -154,6 +159,8 @@ class Plugin {
     data['chapterResultName'] = chapterResultName;
     data['referer'] = referer;
     data['tags'] = tags;
+    data['keywords'] = keywords;
+    data['htmlIdentifier'] = htmlIdentifier;
     return data;
   }
 
@@ -220,7 +227,7 @@ class Plugin {
   }
 
   Future<PluginSearchResponse> queryBangumi(String keyword,
-      {bool shouldRethrow = false, int page = 1}) async {
+      {bool shouldRethrow = false, int page = 1, bool reload = false}) async {
     await queryTags();
     String queryURL = searchURL.replaceAll('@keyword', keyword);
     if (queryURL.contains('@pagenum')) {
@@ -229,47 +236,56 @@ class Plugin {
     }
     queryURL = replaceTag(queryURL);
 
+    List<SearchItem> searchItems = [];
+
     //todo:根据reloadWithWeb实现web爬取
 
-    // if(reloadWithWeb){
-    //   await webYiController.init();
-    //   await webYiController.loadUrl(queryURL);
-    //   Modular.to.pushNamed('/webYi/');
-    //
-    // }
+    var htmlString;
 
-    dynamic resp;
-    List<SearchItem> searchItems = [];
-    if (usePost) {
-      Uri uri = Uri.parse(queryURL);
-      Map<String, String> queryParams = uri.queryParameters;
-      Uri postUri = Uri(
-        scheme: uri.scheme,
-        host: uri.host,
-        path: uri.path,
-      );
-      var httpHeaders = {
-        'referer': '$baseUrl/',
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Cookie': cookie,
-      };
-      resp = await Request().post(postUri.toString(),
-          options: Options(headers: httpHeaders),
-          extra: {'customError': ''},
-          data: queryParams,
-          shouldRethrow: shouldRethrow);
+    if (reload && reloadWithWeb) {
+      await webYiController.init();
+      Modular.to.pushNamed('/webYi/');
+      htmlString = await webYiController.getHtml(queryURL, htmlIdentifier);
+      cookie = await webYiController.getCookie(baseUrl);
     } else {
-      var httpHeaders = {
-        'referer': '$baseUrl/',
-        'Cookie': cookie,
-      };
-      resp = await Request().get(queryURL,
-          options: Options(headers: httpHeaders),
-          shouldRethrow: shouldRethrow,
-          extra: {'customError': ''});
+      dynamic resp;
+
+      if (usePost) {
+        Uri uri = Uri.parse(queryURL);
+        Map<String, String> queryParams = uri.queryParameters;
+        Uri postUri = Uri(
+          scheme: uri.scheme,
+          host: uri.host,
+          path: uri.path,
+        );
+        var httpHeaders = {
+          'referer': '$baseUrl/',
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Accept-Language': Utils.getRandomAcceptedLanguage(),
+          'Connection': 'keep-alive',
+          'Cookie': cookie,
+        };
+        resp = await Request().post(postUri.toString(),
+            options: Options(headers: httpHeaders),
+            extra: {'customError': ''},
+            data: queryParams,
+            shouldRethrow: shouldRethrow);
+      } else {
+        var httpHeaders = {
+          'referer': '$baseUrl/',
+          'Accept-Language': Utils.getRandomAcceptedLanguage(),
+          'Connection': 'keep-alive',
+          'Cookie': cookie,
+        };
+        resp = await Request().get(queryURL,
+            options: Options(headers: httpHeaders),
+            shouldRethrow: shouldRethrow,
+            extra: {'customError': ''});
+      }
+
+      htmlString = resp.data.toString();
     }
 
-    var htmlString = resp.data.toString();
     var htmlElement = parse(htmlString).documentElement!;
 
     htmlElement.queryXPath(searchList).nodes.forEach((element) {
@@ -323,12 +339,20 @@ class Plugin {
     }
     var httpHeaders = {
       'referer': '$baseUrl/',
+      'Accept-Language': Utils.getRandomAcceptedLanguage(),
+      'Connection': 'keep-alive',
       'Cookie': cookie,
     };
+    var resp =
+        await Request().get(queryURL, options: Options(headers: httpHeaders));
+    var htmlString = '';
+    htmlString = resp.data.toString();
+    if (!htmlString.contains('<html')) {
+      await webYiController.init();
+      htmlString = await webYiController.getHtml(queryURL, htmlIdentifier);
+    }
+
     try {
-      var resp =
-          await Request().get(queryURL, options: Options(headers: httpHeaders));
-      var htmlString = resp.data.toString();
       var htmlElement = parse(htmlString).documentElement!;
       int count = 1;
       htmlElement.queryXPath(chapterRoads).nodes.forEach((element) {

@@ -15,8 +15,8 @@ class QueryManager {
   late StreamController _controller;
   bool _isCancelled = false;
 
-  Future<void> querySourceWithPage(
-      String keyword, String pluginName, int page) async {
+  Future<void> querySourceWithPage(String keyword, String pluginName, int page,
+      {bool reload = false}) async {
     for (PluginSearchResponse pluginSearchResponse
         in infoController.pluginSearchResponseList) {
       if (pluginSearchResponse.pluginName == pluginName) {
@@ -30,7 +30,8 @@ class QueryManager {
     for (Plugin plugin in pluginsController.pluginList) {
       if (plugin.name == pluginName) {
         plugin
-            .queryBangumi(keyword, shouldRethrow: true, page: page)
+            .queryBangumi(keyword,
+                shouldRethrow: true, page: page, reload: reload)
             .then((result) {
           if (_isCancelled) return;
 
@@ -48,7 +49,8 @@ class QueryManager {
     }
   }
 
-  Future<void> querySource(String keyword, String pluginName) async {
+  Future<void> querySource(String keyword, String pluginName,
+      {bool reload = false}) async {
     for (PluginSearchResponse pluginSearchResponse
         in infoController.pluginSearchResponseList) {
       if (pluginSearchResponse.pluginName == pluginName) {
@@ -61,7 +63,9 @@ class QueryManager {
     }
     for (Plugin plugin in pluginsController.pluginList) {
       if (plugin.name == pluginName) {
-        plugin.queryBangumi(keyword, shouldRethrow: true).then((result) {
+        plugin
+            .queryBangumi(keyword, shouldRethrow: true, reload: reload)
+            .then((result) {
           if (_isCancelled) return;
 
           infoController.pluginSearchStatus[plugin.name] = 'success';

@@ -23,8 +23,6 @@ class SearchYiPage extends StatefulWidget {
     super.key,
   });
 
-
-
   @override
   State<SearchYiPage> createState() => _SearchYiPageState();
 }
@@ -41,6 +39,7 @@ class _SearchYiPageState extends State<SearchYiPage>
   final PluginsController pluginsController = Modular.get<PluginsController>();
   late TabController tabController;
   late WebYiController webYiController;
+
   //分页信息
   final Map<String, int> _currentPages = {}; // 当前页码
   final Map<String, int> _totalPages = {}; // 总页数
@@ -314,23 +313,11 @@ class _SearchYiPageState extends State<SearchYiPage>
                                 actions: [
                                   GeneralErrorButton(
                                     onPressed: () {
-                                      queryManager?.querySource(
-                                          _searchController.text, plugin.name);
+                                      queryManager?.querySourceWithPage(
+                                          _searchController.text, plugin.name, _currentPages[plugin.name] ?? 1,
+                                          reload: true);
                                     },
                                     text: '重试',
-                                  ),
-                                  GeneralErrorButton(
-                                    onPressed: () async {
-                                      //todo:打开web
-                                      await webYiController.init();
-                                      await webYiController.loadUrl('https://www.ciyuancheng.net/');
-                                      Modular.to.pushNamed('/webYi/');
-                                      print(await webYiController.getCookie('https://www.ciyuancheng.net/'));
-                                      String html = await webYiController.getHtml('https://www.ciyuancheng.net/');
-                                      print(await webYiController.getHtml('https://www.ciyuancheng.net/'));
-                                      print('html.length${html.length}');
-                                    },
-                                    text: 'webview',
                                   ),
                                   GeneralErrorButton(
                                     onPressed: () {
@@ -366,17 +353,6 @@ class _SearchYiPageState extends State<SearchYiPage>
                                 errMsg:
                                     '${plugin.name} 本页无结果 使用其他搜索词或切换到其他视频来源',
                                 actions: [
-                                  GeneralErrorButton(
-                                    onPressed: () async {
-                                      //todo:打开web
-                                      await webYiController.init();
-                                      print(await webYiController.getCookie('https://www.ciyuancheng.net/'));
-                                      String html = await webYiController.getHtml('https://www.ciyuancheng.net/');
-                                      print(await webYiController.getHtml('https://www.ciyuancheng.net/'));
-                                      print('html.length${html.length}');
-                                    },
-                                    text: 'webview',
-                                  ),
                                   GeneralErrorButton(
                                     onPressed: () {
                                       KazumiDialog.show(builder: (context) {

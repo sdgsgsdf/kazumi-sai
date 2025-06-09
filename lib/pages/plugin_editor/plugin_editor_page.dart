@@ -33,10 +33,12 @@ class _PluginEditorPageState extends State<PluginEditorPage> {
       TextEditingController();
   final TextEditingController refererController = TextEditingController();
   final TextEditingController cookieController = TextEditingController();
+  final TextEditingController htmlIdentifierController = TextEditingController();
 
   final Map<String, String> _editedTags = {};
   final TextEditingController _tagKeyController = TextEditingController();
   final TextEditingController _tagValueController = TextEditingController();
+
 
   bool muliSources = true;
   bool useWebview = true;
@@ -66,6 +68,7 @@ class _PluginEditorPageState extends State<PluginEditorPage> {
     chapterResultNameController.text = plugin.chapterResultName;
     refererController.text = plugin.referer;
     cookieController.text = plugin.cookie;
+    htmlIdentifierController.text =plugin.htmlIdentifier;
     muliSources = plugin.muliSources;
     useWebview = plugin.useWebview;
     useNativePlayer = plugin.useNativePlayer;
@@ -227,13 +230,19 @@ class _PluginEditorPageState extends State<PluginEditorPage> {
                     const SizedBox(height: 20),
                     SwitchListTile(
                       title: const Text('webview'),
-                      subtitle: const Text('使用webview重新加载'),
+                      subtitle: const Text('使用webview监听获取html'),
                       value: reloadWithWeb,
                       onChanged: (bool value) {
                         setState(() {
                           reloadWithWeb = value;
                         });
                       },
+                    ),
+                    const SizedBox(height: 20),
+                    TextField(
+                      controller: htmlIdentifierController,
+                      decoration: const InputDecoration(
+                          labelText: 'htmlIdentifier', border: OutlineInputBorder()),
                     ),
                   ],
                 ),
@@ -270,6 +279,7 @@ class _PluginEditorPageState extends State<PluginEditorPage> {
           plugin.referer = refererController.text;
           plugin.tags.clear();
           plugin.tags.addAll(_editedTags);
+          plugin.htmlIdentifier =htmlIdentifierController.text;
           pluginsController.updatePlugin(plugin);
           Navigator.of(context).pop();
         },
