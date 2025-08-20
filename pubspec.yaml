@@ -82,7 +82,7 @@ dependencies:
   synchronized: any
   flutter_svg: ^2.0.17
   antlr4: ^4.13.2
-  fl_chart: ^1.0.0
+  fl_chart: ^0.69.0
   skeletonizer: ^2.0.0-pre
   webview_windows:
     git:
